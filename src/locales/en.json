@@ -77,7 +77,8 @@
         "token": "Token",
         "name": "Name",
         "invite": "Invite",
-        "delete": "Delete"
+        "delete": "Delete",
+        "activity": "Activity"
     },
     "sidebar": {
         "main": "MAIN",

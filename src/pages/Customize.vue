@@ -2,7 +2,7 @@
   <div id="customize">
     <breadcrumbs :name="$t('sidebar.customize')" />
 
-    <div class="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800" v-if="!currentBotID && currentGuildId">
+    <div class="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800" v-if="!currentBotID && currentGuildId && !tokenLock">
       <p class="text-xl mb-4">{{ $t("customize.new_instance") }}</p>
       <div class="flex">
         <label class="block w-1/2 text-sm">
@@ -29,16 +29,15 @@
       </button>
     </div>
 
-    <div class="flex px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800" v-if="currentBotID || !currentGuildId">
+    <div class="flex flex-wrap px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800" v-if="currentBotID || !currentGuildId">
       <div style="max-width: 200px;" class="flex-auto">
         <p class="text-xl mb-4">{{ $t("customize.avatar") }}</p>
-          <div style="width: 200px; height: 200px;" class="mb-0 border-4 flex justify-center px-4 py-3 bg-white rounded-mg shadow-lg p-3 mb-5 dark:bg-gray-700">
+          <div class="mb-0 border-4 flex justify-center px-4 py-3 bg-white rounded-mg shadow-lg p-3 mb-5 dark:bg-gray-700">
             <img
                 class="cursor-pointer rounded-full shadow-lg center m-auto"
                 :src="currentAvatar"
                 :key="currentAvatar"
             >
-
           </div>
           <div class="flex justify-center bottom-0">
             <label>
@@ -53,7 +52,7 @@
             </label>
           </div>
       </div>
-      <div style="max-width: 35%; width: 35%" class="pl-10">
+      <div style="max-width: 40%; width: auto" class="pl-10">
         <p class="text-xl mb-5">{{ $t("customize.name") }}</p>
         <label>
           <input
@@ -65,12 +64,34 @@
               @change="onNameChange()"
           />
         </label>
-        <div >
+        <div class="flex-auto">
+          <p class="text-xl mt-4">{{ $t("customize.activity") }}</p>
+          <select
+              :style="{ backgroundImage: 'url(' + require('@/assets/dropDownArrow.svg') + ')', width: 'auto' }"
+              class="drop_down mt-3 p-2 cursor-pointer text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+              v-bind:disabled="!currentBotID && !currentGuildId"
+              v-model="activityOption"
+          >
+            <option v-for="option in activityOptionsList" v-bind:value="option.value" :key="option.key">
+              {{ option.text }}
+            </option>
+          </select>
+          <label class="mt-3 flex">
+            <input
+                style="width:100%"
+                v-bind:disabled="!currentBotID && !currentGuildId"
+                class="text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                maxlength="32"
+                v-model="currentActivity"
+                @change="onActivityChange()"
+            />
+          </label>
+        </div>
+        <div style="flex-basis: 100%;" class="flex bottom-0 mt-4">
           <button
               type="button"
               name="invite"
-              style="width: 50%"
-              class="mt-4 rounded-md border border-gray-500 shadow-sm px-4 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
+              class="rounded-md border border-gray-500 shadow-sm px-4 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
               @click="onInvite()"
           >
             {{ $t("customize.invite") }}
@@ -78,8 +99,7 @@
           <button
               type="button"
               name="delete"
-              style="width: 50%"
-              class="mt-4 rounded-md border border-red-700 shadow-sm px-4 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
+              class="rounded-md border border-red-700 shadow-sm px-4 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
               @click="onDelete()"
           >
             {{ $t("customize.delete") }}
@@ -89,6 +109,19 @@
     </div>
   </div>
 </template>
+
+<style>
+.drop_down {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-repeat: no-repeat;
+  background-position-x: 90%;
+  background-position-y: 50%;
+}
+.drop_down::-ms-expand {
+  display: none;
+}
+</style>
 
 <script>
 import { mapState, mapGetters } from "vuex";
@@ -109,15 +142,48 @@ export default {
   },
   data() {
     return {
-      currentAvatar: "https://rallybot.app/img/space.5424f731.png",
-      currentName: "RallyBot",
+      currentAvatar: "",
+      currentName: "",
       currentToken: "",
       currentBotID: "",
+      currentActivity: "",
+      activityOption: "playing",
+      activityOptionsList: [
+        { value: 'playing', text: 'Playing', key: 1},
+        { value: 'listening', text: 'Listening', key: 2},
+        { value: 'competing', text: 'Competing', key: 3},
+        { value: 'watching', text: 'Watching', key: 4},
+
+      ],
       avatarTimeout: 0,
-      nameTimeout: 0
+      nameTimeout: 0,
+      tokenLock: 0,
     };
   },
   methods: {
+    onActivityChange() {
+      if (!this.currentGuildId || !this.auth || !this.currentToken) return;
+      fetch(
+          `${config.botApi}/mappings/bot_activity${queryString({
+            guildId: this.currentGuildId,
+          })}`,
+          {
+            method: "post",
+            headers: {
+              authorization: this.token,
+            },
+            body: JSON.stringify({ activity_type: this.activityOption, activity_text: this.currentActivity }),
+          }
+      )
+          .then((res) => res.json())
+          .then((response) => {
+            if (response.success) {
+              this.$toast.success("Bot's activity has been changed");
+            } else
+              this.$toast.error("An error was encountered. Please try again");
+          })
+          .catch(() => this.$toast.warning("Failed to change bot's activity. Are you offline?"));
+    },
     onDelete() {
       if (!this.currentGuildId || !this.auth || !this.currentToken) return;
 
@@ -214,9 +280,11 @@ export default {
 
     },
     botIDWait(x) {
-      if (x === 10) {
+      if (x === 5) {
+        this.tokenLock = 0
         return '';
       }
+      this.tokenLock = 1
       fetch(`${config.botApi}/mappings/bot_instance/${this.currentGuildId}`, {
         headers: {
           authorization: this.token,
@@ -226,14 +294,15 @@ export default {
           .then((response) => {
             if (response.bot_id) {
               this.currentBotID = response.bot_id;
-              setTimeout(() => {
+              // setTimeout(() => {
+                this.tokenLock = 0
                 this.refresh(this.currentGuildId)
-              }, 5000)
+              // }, )
               return ''
             } else {
               setTimeout(() => {
                 this.botIDWait(x + 1)
-              }, 1000)
+              }, 5000)
             }
           })
     },
@@ -329,7 +398,6 @@ export default {
       })
           .then((res) => res.json())
           .then((response) => {
-            console.log(response)
             if (response.name_timeout) {
               this.nameTimeout = response.name_timeout;
             } else {
@@ -338,8 +406,6 @@ export default {
 
             if (response.bot_name) {
               this.currentName = response.bot_name;
-            } else {
-              this.currentName = 'RallyBot'
             }
           })
     },
