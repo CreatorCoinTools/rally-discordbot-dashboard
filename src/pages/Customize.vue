@@ -35,7 +35,7 @@
           <div class="mb-0 border-4 flex justify-center px-4 py-3 bg-white rounded-mg shadow-lg p-3 mb-5 dark:bg-gray-700">
             <img
                 class="cursor-pointer rounded-full shadow-lg center m-auto"
-                :src="currentAvatar"
+                :src="currentAvatar ? currentAvatar : currentGuildId ? '' : 'https://rallybot.app/img/space.5424f731.png'"
                 :key="currentAvatar"
             >
           </div>
@@ -60,7 +60,7 @@
               v-bind:disabled="!currentBotID && !currentGuildId"
               class="text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
               maxlength="32"
-              v-model="currentName"
+              :value="currentName ? currentName : currentGuildId ? '' : 'RallyRoleBot'"
               @change="onNameChange()"
           />
         </label>
@@ -82,8 +82,8 @@
                 v-bind:disabled="!currentBotID && !currentGuildId"
                 class="text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
                 maxlength="32"
-                v-model="currentActivity"
-                @change="onActivityChange()"
+                :value="currentActivity ? currentActivity : currentGuildId ? '' : 'Customizing'"
+                @submit="onActivityChange()"
             />
           </label>
         </div>
@@ -408,6 +408,20 @@ export default {
               this.currentName = response.bot_name;
             }
           })
+
+      fetch(`${config.botApi}/mappings/bot_activity/${val}`, {
+        headers: {
+          authorization: this.token,
+        },
+      })
+          .then((res) => res.json())
+          .then((response) => {
+            if (response.activity_text && response.activity_type) {
+              this.activityOption = response.activity_type;
+              this.currentActivity = response.activity_text
+            }
+          })
+
     },
   },
   watch: {
