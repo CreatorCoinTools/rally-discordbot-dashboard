@@ -112,7 +112,9 @@ export default {
       currentAvatar: "https://rallybot.app/img/space.5424f731.png",
       currentName: "RallyBot",
       currentToken: "",
-      currentBotID: ""
+      currentBotID: "",
+      avatarTimeout: 0,
+      nameTimeout: 0
     };
   },
   methods: {
@@ -147,6 +149,10 @@ export default {
       window.open(`https://discord.com/oauth2/authorize?client_id=${this.currentBotID}&permissions=268438560&scope=bot`, "_blank");
     },
     onNameChange() {
+      if (this.nameTimeout == 1) {
+        return this.$toast.error("You are changing the bot's name too many times too fast.");
+      }
+
       if (!this.currentGuildId || !this.auth || !this.currentToken) return;
       fetch(
           `${config.botApi}/mappings/bot_name${queryString({
@@ -162,8 +168,17 @@ export default {
       )
           .then((res) => res.json())
           .then((response) => {
+            if (response.name_timeout) {
+              this.nameTimeout = response.name_timeout;
+            } else {
+              this.nameTimeout = 0
+            }
+
             if (response.bot_name) {
               this.currentName = response.bot_name;
+              if (this.nameTimeout) {
+                return this.$toast.error("You are changing the bot's name too many times too fast.");
+              }
               this.$toast.success("Bot name has been changed");
             } else
               this.$toast.error("An error was encountered. Please try again");
@@ -225,6 +240,10 @@ export default {
     onBotAvatarChange(files) {
       if (!this.currentGuildId || !this.auth) return;
 
+      if (this.avatarTimeout == 1) {
+        return this.$toast.error("You are changing the bot's avatar too many times too fast.");
+      }
+
       let file = files[0];
       let formData = new FormData();
       formData.append('file', file);
@@ -232,8 +251,6 @@ export default {
       let fileReader = new FileReader()
       fileReader.addEventListener('load', () => {
         this.currentAvatar = fileReader.result
-
-        console.log(this.currentAvatar)
 
         fetch(
             `${config.botApi}/mappings/bot_avatar${queryString({
@@ -249,8 +266,14 @@ export default {
         )
             .then((res) => res.json())
             .then((response) => {
-              if (response.bot_avatar) {
-                this.currentAvatar = response.bot_avatar;
+              if (response.avatar_timeout) {
+                this.avatarTimeout = response.avatar_timeout
+                return this.$toast.error("You are changing the bot's avatar too many times too fast.");
+              } else {
+                this.avatarTimeout = 0
+              }
+
+              if (response.guildId) {
                 this.$toast.success("Bot avatar has been updated");
               } else
                 this.$toast.error("An error was encountered. Please try again");
@@ -286,7 +309,12 @@ export default {
       })
           .then((res) => res.json())
           .then((response) => {
-            console.log(response)
+            if (response.avatar_timeout) {
+              this.avatarTimeout = response.avatar_timeout
+            } else {
+              this.avatarTimeout = 0
+            }
+
             if (response.bot_avatar) {
               this.currentAvatar = response.bot_avatar;
             } else {
@@ -301,6 +329,13 @@ export default {
       })
           .then((res) => res.json())
           .then((response) => {
+            console.log(response)
+            if (response.name_timeout) {
+              this.nameTimeout = response.name_timeout;
+            } else {
+              this.nameTimeout = 0
+            }
+
             if (response.bot_name) {
               this.currentName = response.bot_name;
             } else {
