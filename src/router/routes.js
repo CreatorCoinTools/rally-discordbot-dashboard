@@ -9,6 +9,7 @@ const Logs = () => import('@/pages/Logs');
 const Settings = () => import('@/pages/Settings');
 const Setup = () => import('@/pages/Setup');
 const NotFound = () => import('@/pages/NotFound');
+const Customize = () => import('@/pages/Customize')
 
 export default [
     { path: '/', name: 'Homepage', component: Landing },
@@ -23,6 +24,7 @@ export default [
             { path: 'logs', name: 'Logs', component: Logs },
             { path: 'settings', name: 'Settings', component: Settings },
             { path: 'setup', name: 'Setup', component: Setup },
+            { path: 'customize', name: 'Customize', component: Customize },
         ]
     },
     { path: "*", component: NotFound },

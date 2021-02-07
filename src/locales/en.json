@@ -69,6 +69,16 @@
         "errors": "Errors",
         "login": "Login"
     },
+    "customize": {
+        "avatar": "Avatar",
+        "changeavatar": "Change Avatar",
+        "new_instance": "New Instance",
+        "submit": "Submit",
+        "token": "Token",
+        "name": "Name",
+        "invite": "Invite",
+        "delete": "Delete"
+    },
     "sidebar": {
         "main": "MAIN",
         "dashboard": "Dashboard",
@@ -78,7 +88,8 @@
         "misc": "MISC",
         "logs": "Logs",
         "controls": "Controls",
-        "settings": "Settings"
+        "settings": "Settings",
+        "customize": "Customize"
     },
     "footer": {
         "terms": "Terms of Service",
