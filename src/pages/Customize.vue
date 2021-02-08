@@ -32,12 +32,21 @@
     <div class="flex flex-wrap px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800" v-if="currentBotID || !currentGuildId">
       <div style="max-width: 200px;" class="flex-auto">
         <p class="text-xl mb-4">{{ $t("customize.avatar") }}</p>
-          <div class="mb-0 border-4 flex justify-center px-4 py-3 bg-white rounded-mg shadow-lg p-3 mb-5 dark:bg-gray-700">
-            <img
-                class="cursor-pointer rounded-full shadow-lg center m-auto"
-                :src="currentAvatar ? currentAvatar : currentGuildId ? '' : 'https://rallybot.app/img/space.5424f731.png'"
-                :key="currentAvatar"
+          <div
+              style="height: 200px; width: 200px"
+              class="mb-0 border-4 flex justify-center px-4 py-3 bg-white rounded-mg shadow-lg p-3 mb-5 dark:bg-gray-700">
+            <label
+                style="height: 160px; width: 160px"
+                class="flex justify-center"
             >
+              <img
+                  class="cursor-pointer rounded-full shadow-lg center m-auto"
+                  :src="currentAvatar ? currentAvatar : currentGuildId ? '' : 'https://rallybot.app/img/space.5424f731.png'"
+                  :key="currentAvatar"
+                  @click="$refs.fileInput.click()"
+              >
+              <a class="cursor-pointer hover:underline"></a>
+            </label>
           </div>
           <div class="flex justify-center bottom-0">
             <label>
@@ -45,6 +54,7 @@
                   type="file"
                   accept="image/jpeg, image/png"
                   style="display: none"
+                  ref="fileInput"
                   v-bind:disabled="!currentBotID && !currentGuildId"
                   @change="onBotAvatarChange($event.target.files);"
               >
@@ -294,10 +304,8 @@ export default {
           .then((response) => {
             if (response.bot_id) {
               this.currentBotID = response.bot_id;
-              // setTimeout(() => {
-                this.tokenLock = 0
-                this.refresh(this.currentGuildId)
-              // }, )
+              this.tokenLock = 0
+              this.refresh(this.currentGuildId)
               return ''
             } else {
               setTimeout(() => {
@@ -366,62 +374,24 @@ export default {
             if (response.bot_id) {
               this.currentToken = response.bot_instance;
               this.currentBotID = response.bot_id;
-            } else {
-              this.currentBotID = ''
-            }
-          })
-
-      fetch(`${config.botApi}/mappings/bot_avatar/${val}`, {
-        headers: {
-          authorization: this.token,
-        },
-      })
-          .then((res) => res.json())
-          .then((response) => {
-            if (response.avatar_timeout) {
-              this.avatarTimeout = response.avatar_timeout
-            } else {
-              this.avatarTimeout = 0
-            }
-
-            if (response.bot_avatar) {
-              this.currentAvatar = response.bot_avatar;
-            } else {
-              this.currentAvatar = "https://rallybot.app/img/space.5424f731.png"
-            }
-          })
-
-      fetch(`${config.botApi}/mappings/bot_name/${val}`, {
-        headers: {
-          authorization: this.token,
-        },
-      })
-          .then((res) => res.json())
-          .then((response) => {
-            if (response.name_timeout) {
-              this.nameTimeout = response.name_timeout;
-            } else {
-              this.nameTimeout = 0
-            }
-
-            if (response.bot_name) {
-              this.currentName = response.bot_name;
-            }
-          })
-
-      fetch(`${config.botApi}/mappings/bot_activity/${val}`, {
-        headers: {
-          authorization: this.token,
-        },
-      })
-          .then((res) => res.json())
-          .then((response) => {
-            if (response.activity_text && response.activity_type) {
-              this.activityOption = response.activity_type;
+              this.currentAvatar = response.bot_avatar
+              this.currentName = response.bot_name
               this.currentActivity = response.activity_text
+              this.activityOption = response.activity_type || 'playing'
+              this.avatarTimeout = response.avatarTimeout
+              this.nameTimeout = response.nameTimeout
+            } else {
+              this.currentToken = ""
+              this.currentBotID = ""
+              this.currentAvatar = ""
+              this.currentName = ""
+              this.currentActivity = ""
+              this.activityOption = 'playing'
+              this.avatarTimeout = ""
+              this.nameTimeout = ""
             }
           })
-
+          .catch(() => {})
     },
   },
   watch: {
