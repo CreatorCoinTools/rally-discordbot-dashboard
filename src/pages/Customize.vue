@@ -70,7 +70,8 @@
               v-bind:disabled="!currentBotID && !currentGuildId"
               class="text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
               maxlength="32"
-              :value="currentName ? currentName : currentGuildId ? '' : 'RallyRoleBot'"
+              minlength="3"
+              v-model="currentName"
               @change="onNameChange()"
           />
         </label>
@@ -92,8 +93,8 @@
                 v-bind:disabled="!currentBotID && !currentGuildId"
                 class="text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
                 maxlength="32"
-                :value="currentActivity ? currentActivity : currentGuildId ? '' : 'Customizing'"
-                @submit="onActivityChange()"
+                v-model="currentActivity"
+                @change="onActivityChange()"
             />
           </label>
         </div>
@@ -165,8 +166,6 @@ export default {
         { value: 'watching', text: 'Watching', key: 4},
 
       ],
-      avatarTimeout: 0,
-      nameTimeout: 0,
       tokenLock: 0,
     };
   },
@@ -225,11 +224,8 @@ export default {
       window.open(`https://discord.com/oauth2/authorize?client_id=${this.currentBotID}&permissions=268438560&scope=bot`, "_blank");
     },
     onNameChange() {
-      if (this.nameTimeout == 1) {
-        return this.$toast.error("You are changing the bot's name too many times too fast.");
-      }
-
       if (!this.currentGuildId || !this.auth || !this.currentToken) return;
+
       fetch(
           `${config.botApi}/mappings/bot_name${queryString({
             guildId: this.currentGuildId,
@@ -244,15 +240,9 @@ export default {
       )
           .then((res) => res.json())
           .then((response) => {
-            if (response.name_timeout) {
-              this.nameTimeout = response.name_timeout;
-            } else {
-              this.nameTimeout = 0
-            }
-
             if (response.bot_name) {
               this.currentName = response.bot_name;
-              if (this.nameTimeout) {
+              if (response.name_timeout) {
                 return this.$toast.error("You are changing the bot's name too many times too fast.");
               }
               this.$toast.success("Bot name has been changed");
@@ -317,10 +307,6 @@ export default {
     onBotAvatarChange(files) {
       if (!this.currentGuildId || !this.auth) return;
 
-      if (this.avatarTimeout == 1) {
-        return this.$toast.error("You are changing the bot's avatar too many times too fast.");
-      }
-
       let file = files[0];
       let formData = new FormData();
       formData.append('file', file);
@@ -343,14 +329,11 @@ export default {
         )
             .then((res) => res.json())
             .then((response) => {
-              if (response.avatar_timeout) {
-                this.avatarTimeout = response.avatar_timeout
-                return this.$toast.error("You are changing the bot's avatar too many times too fast.");
-              } else {
-                this.avatarTimeout = 0
-              }
-
-              if (response.guildId) {
+              if (response.bot_avatar) {
+                this.currentAvatar = response.bot_avatar
+                if (response.avatar_timeout) {
+                  return this.$toast.error("You are changing the bot's avatar too many times too fast.");
+                }
                 this.$toast.success("Bot avatar has been updated");
               } else
                 this.$toast.error("An error was encountered. Please try again");
@@ -361,8 +344,6 @@ export default {
     },
     refresh(val) {
       if (!this.auth) return;
-
-      this.currentToken = ''
 
       fetch(`${config.botApi}/mappings/bot_instance/${val}`, {
         headers: {
@@ -378,8 +359,6 @@ export default {
               this.currentName = response.bot_name
               this.currentActivity = response.activity_text
               this.activityOption = response.activity_type || 'playing'
-              this.avatarTimeout = response.avatarTimeout
-              this.nameTimeout = response.nameTimeout
             } else {
               this.currentToken = ""
               this.currentBotID = ""
@@ -387,8 +366,6 @@ export default {
               this.currentName = ""
               this.currentActivity = ""
               this.activityOption = 'playing'
-              this.avatarTimeout = ""
-              this.nameTimeout = ""
             }
           })
           .catch(() => {})
