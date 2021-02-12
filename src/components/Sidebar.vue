@@ -128,6 +128,17 @@
               </svg>
               <span>{{ $t("sidebar.settings") }}</span>
             </router-link>
+            <router-link
+                v-if="currentGuild !== null"
+                tag="div"
+                :to="{ path: 'customize' }"
+                class="w-full flex items-center h-10 pl-4 hover:text-red-400 rounded-lg cursor-pointer"
+            >
+              <svg style="fill:#9e9e9e" class="h-6 w-6 mr-2 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M8.071 21.586l-7.071 1.414 1.414-7.071 14.929-14.929 5.657 5.657-14.929 14.929zm-.493-.921l-4.243-4.243-1.06 5.303 5.303-1.06zm9.765-18.251l-13.3 13.301 4.242 4.242 13.301-13.3-4.243-4.243z"/>
+              </svg>
+              <span>{{ $t("sidebar.customize") }}</span>
+            </router-link>
           </div>
         </div>
       </div>

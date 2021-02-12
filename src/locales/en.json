@@ -82,6 +82,17 @@
         "errors": "Errors",
         "login": "Login"
     },
+    "customize": {
+        "avatar": "Avatar",
+        "changeavatar": "Change Avatar",
+        "new_instance": "New Instance",
+        "submit": "Submit",
+        "token": "Token",
+        "name": "Name",
+        "invite": "Invite",
+        "delete": "Delete",
+        "activity": "Activity"
+    },
     "sidebar": {
         "main": "MAIN",
         "dashboard": "Dashboard",
@@ -92,6 +103,7 @@
         "logs": "Logs",
         "controls": "Controls",
         "settings": "Settings",
+        "customize": "Customize",
         "deeplink" : "Deeplink"
     },
     "footer": {
