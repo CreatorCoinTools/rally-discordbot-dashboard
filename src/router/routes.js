@@ -1,7 +1,7 @@
 //Common views
 import Landing from '@/pages/Landing';
 
-const Dashboard = () => import('@/components/Dashboard');
+const Dashboard = () => import('@/layouts/Dashboard');
 const DashboardHome = () => import('@/pages/Home');
 const Commands = () => import('@/pages/Commands');
 const FeatureRequest = () => import('@/pages/FeatureRequest');
@@ -9,7 +9,8 @@ const Logs = () => import('@/pages/Logs');
 const Settings = () => import('@/pages/Settings');
 const Setup = () => import('@/pages/Setup');
 const NotFound = () => import('@/pages/NotFound');
-const Customize = () => import('@/pages/Customize')
+const Customize = () => import('@/pages/Customize');
+const Deeplink = () => import('@/pages/Deeplink');
 
 export default [
     { path: '/', name: 'Homepage', component: Landing },
@@ -25,6 +26,7 @@ export default [
             { path: 'settings', name: 'Settings', component: Settings },
             { path: 'setup', name: 'Setup', component: Setup },
             { path: 'customize', name: 'Customize', component: Customize },
+            { path: 'deeplink', name: 'Deeplink', component: Deeplink },
         ]
     },
     { path: "*", component: NotFound },

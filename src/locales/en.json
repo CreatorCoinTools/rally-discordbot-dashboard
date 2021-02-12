@@ -23,7 +23,19 @@
         "creatorCoin": "Creator Coin",
         "loading": "Loading",
         "period": "Period",
-        "default": "Default"
+        "default": "Default",
+        "chart": "Chart"
+    },
+    "deeplink":{
+        "Help" : "Need help?",
+        "Home" : "Home",
+        "coinName" : "Coin Name",
+        "currencyType" : "Currency Type",
+        "amount" : "Amount",
+        "memo" : "Memo",
+        "generatedLink" : "Generated link",
+        "link" : "link"
+
     },
     "setup": {
         "go": "Let's go",
@@ -58,6 +70,7 @@
         "prefix": "Prefix",
         "enable": "Enable",
         "disable": "Disable",
+        "currency": "Currency",
         "reset": "Reset"
     },
     "navbar": {
@@ -90,7 +103,8 @@
         "logs": "Logs",
         "controls": "Controls",
         "settings": "Settings",
-        "customize": "Customize"
+        "customize": "Customize",
+        "deeplink" : "Deeplink"
     },
     "footer": {
         "terms": "Terms of Service",
