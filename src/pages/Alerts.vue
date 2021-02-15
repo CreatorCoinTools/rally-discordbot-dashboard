@@ -188,14 +188,13 @@
               </div>
 
               <div class="mt-5"
-                   v-if="!new_instance.edit"
               >
                 <button
-                    @click="add(alert)"
+                    @click="!new_instance.edit ? add(alert) : save(alert)"
                     type="button"
                     class="w-full inline-flex justify-center rounded-md border border-gray-500 shadow-sm px-4 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
                 >
-                  {{ $t(`alerts.add`) }}
+                  {{ $t(`alerts.${!new_instance.edit ? 'add': 'save'}`) }}
                 </button>
               </div>
 
@@ -317,6 +316,30 @@ export default {
     }
   },
   methods: {
+    save(alert) {
+      let instance_being_edited
+
+      this.settings[alert].instances.forEach((instance) => {
+        if(instance.edit === true){
+          instance_being_edited = instance
+        }
+      });
+
+      instance_being_edited.edit = false
+      instance_being_edited.channel = this.new_instance.channel
+      instance_being_edited.settings = this.new_instance.settings
+      this.new_instance = {
+        'channel': '',
+        'settings': {}
+      }
+      if (alert !== 'daily_stats') {
+        this.new_instance.settings = {
+          'customMessage': this.defaultMessages[alert].message,
+          'customTitle': "Alert!",
+          'customColour': "#ff0000"
+        }
+      }
+    },
     edit(alert, instance) {
       if (!('edit' in instance)) {
         instance.edit = false
@@ -337,6 +360,12 @@ export default {
           }
         }
       } else {
+        this.settings[alert].instances.forEach((instance) => {
+          if(instance.edit === true){
+            instance.edit = false
+          }
+        });
+
         for (let [key, value] of Object.entries(instance.settings)) {
           this.new_instance.settings[key] = value
         }
@@ -365,10 +394,6 @@ export default {
 
       let taken_channels = []
       this.settings[alert].instances.map((el) => taken_channels.push(el.channel))
-
-      if (taken_channels.includes(this.new_instance.channel)) {
-        return this.$toast.error("Can't have duplicate channels");
-      }
 
       this.settings[alert].settings.map((el) => {
         if (!this.new_instance.settings[el]) {
