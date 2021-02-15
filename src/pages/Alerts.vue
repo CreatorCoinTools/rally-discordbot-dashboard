@@ -179,8 +179,6 @@
                     </span>
                     </span>
                     <textarea
-                        style="line-height: 10px"
-                        rows="1"
                         class="w-1/2 mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
                         :placeholder="defaultMessages[alert]"
                         v-model="new_instance.settings.customMessage"
