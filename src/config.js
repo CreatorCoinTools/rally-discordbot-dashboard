@@ -3,8 +3,8 @@ const BOT_API = process.env.VUE_APP_BOT_API;
 
 export default {
     home: `${window.location.origin}/`,
-    clientId: CLIENT_ID || "737727152769728564",
-    botApi: BOT_API || "http://192.168.0.21:8000",
+    clientId: CLIENT_ID || "",
+    botApi: BOT_API || "",
     rallyApi: "https://api.rally.io/v1",
     coingeckoApi: "https://api.coingecko.com/api/v3",
     discordApi: "https://discord.com/api",
