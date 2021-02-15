@@ -530,7 +530,7 @@ export default {
                 'settings': {}
               }
             });
-            this.$toast.warning("Failed to load settings. Are you offline?")
+            this.$toast.warning("Failed to load alerts settings. Are you offline?")
           });
 
     },
