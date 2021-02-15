@@ -134,7 +134,15 @@
         "statSettings": "Stat Settings",
         "timezone": "Timezone",
         "enabled": "Enabled",
-        "daily_stats": "Daily Stats"
+        "daily_stats": "Daily Stats",
+        "customizeMessage": "Customize Message",
+        "title": "Message Title",
+        "colour": "Message Colour",
+        "message": "Message",
+        "customMessage": "Custom Message",
+        "customTitle": "Custom Title",
+        "customColour": "Custom Colour",
+        "variables": "Variables"
     },
     "footer": {
         "terms": "Terms of Service",

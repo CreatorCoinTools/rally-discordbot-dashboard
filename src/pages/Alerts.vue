@@ -54,7 +54,7 @@
                   <th class="px-4 py-3">{{ $t('alerts.nr') }}</th>
                   <th class="px-4 py-3">{{ $t('alerts.channel') }}</th>
                   <th
-                    v-for="(setting, index) in settings[alert].settings" v-bind:key="index"
+                    v-for="(setting, index) in getSettings(alert)" v-bind:key="index"
                     class="px-4 py-3"
                   >
                     {{ $t(`alerts.${setting}`) }}
@@ -72,39 +72,23 @@
                     {{ instance_index + 1}}
                   </td>
                   <td class="px-4 py-3">
-                    <label class="inline-block"
-                      v-if="instance.edit"
-                    >
-                      <input
-                          class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                          placeholder="channel-name"
-                          maxlength="32"
-                          v-model="instance.channel"
-                          v-bind:disabled="!instance.edit"
-                      />
-                    </label>
-                    <span v-if="!instance.edit">{{ instance.channel }}</span>
+                    <span>{{ instance.channel }}</span>
                   </td>
                   <td class="px-4 py-3" v-for="(setting, index) in settings[alert].settings" v-bind:key="index">
-                    <label
-                        class="inline-block"
-                        v-if="instance.edit"
-                    >
+                    <label>
                       <input
-                          class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                          v-bind:disabled="!instance.edit"
-                          v-model="instance.settings[setting]"
-                          type="number"
-                          v-bind:placeholder="'placeholder' in settings[alert] ? settings[alert].placeholder[setting]: 'No Limit'"
+                          v-bind:class="{'w-full': setting === 'customMessage'}"
+                        class="w-20 text-sm font-semibold text-left text-gray-500 dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800"
+                        :value="'default' in settings[alert] && !instance.settings[setting] ? settings[alert].default[setting] : instance.settings[setting] ? instance.settings[setting] : 'No Limit'"
+                        disabled="disabled"
                       />
                     </label>
-                    <span v-if="!instance.edit">{{ 'default' in settings[alert] && !instance.settings[setting] ? settings[alert].default[setting] : instance.settings[setting] ? instance.settings[setting] : 'No Limit' }}</span>
                   </td>
                   <td class="px-4 py-3">
                     <button
                         type="button"
-                        class="w-full inline-flex justify-center rounded-md border border-gray-500 shadow-sm px-4 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
-                        @click="edit(instance)"
+                        class="inline-flex justify-center rounded-md border border-gray-500 shadow-sm px-4 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
+                        @click="edit(alert, instance)"
                     >
                       {{ $t(`alerts.${instance.edit ? 'save' : 'edit'}`) }}
                     </button>
@@ -119,49 +103,108 @@
                     </button>
                   </td>
                 </tr>
-
-                <tr>
-                  <td class="px-4 py-3 text-center">
-                    {{ settings[alert].instances.length + 1}}
-                  </td>
-                  <td class="px-4 py-3">
-                    <label class="inline-block">
-                      <input
-                          class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                          placeholder="channel-name"
-                          maxlength="32"
-                          v-model="new_instance.channel"
-                      />
-                    </label>
-                  </td>
-                  <td class="px-4 py-3" v-for="(setting, index) in settings[alert].settings" v-bind:key="index">
-                    <label class="inline-block">
-                      <input
-                          type="number"
-                          class="block w-full mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                          v-model="new_instance.settings[setting]"
-                          v-bind:placeholder="'placeholder' in settings[alert] ? settings[alert].placeholder[setting]: 'No Limit'"
-                      />
-                    </label>
-                  </td>
-                  <td class="px-4 py-3">
-                    <button
-                        @click="add(alert)"
-                        type="button"
-                        class="w-full inline-flex justify-center rounded-md border border-gray-500 shadow-sm px-4 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
-                    >
-                      {{ $t(`alerts.add`) }}
-                    </button>
-                  </td>
-                  <td class="px-4 py-3"></td>
-                </tr>
                 </tbody>
               </table>
+
+              <div class="mt-10">
+                <label>
+                  <span>
+                    {{ $t(`alerts.channelname`) }}:
+                  </span>
+                  <input
+                      class="block mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                      placeholder="channel-name"
+                      v-model="new_instance.channel"
+                      maxlength="32"
+                  />
+                </label>
+              </div>
+
+              <div>
+                <div
+                    class="mt-5"
+                    v-for="(setting, index) in getSettings(alert, 1)" v-bind:key="index"
+                >
+                  <label>
+                    {{ $t(`alerts.${setting}`) }}:
+                    <input
+                        type="number"
+                        class="block mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                        :placeholder="'placeholder' in settings[alert] ? settings[alert].placeholder[setting]: 'No Limit'"
+                        v-model="new_instance.settings[setting]"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div class="mt-5" v-if="alert !== 'daily_stats'">
+                <label>
+                  <input
+                      type="checkbox"
+                      name="customize"
+                      v-model="settings[alert].customize"
+                  />
+                  {{ $t(`alerts.customizeMessage`) }}
+                </label>
+              </div>
+
+              <div class="mt-5" v-if="alert !== 'daily_stats' && settings[alert].customize">
+                <div>
+                  <label>
+                    {{ $t(`alerts.title`) }}:
+                    <input
+                        class="block mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                        placeholder="Alert!"
+                        v-model="new_instance.settings.customTitle"
+                    />
+                  </label>
+                </div>
+                <div class="mt-5">
+                  <label>
+                    {{ $t(`alerts.colour`) }}:
+                    <input
+                        class="block mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                        placeholder="#ff0000"
+                        v-model="new_instance.settings.customColour"
+                    />
+                  </label>
+                </div>
+                <div class="mt-5">
+                  <label >
+                    {{ $t(`alerts.message`) }}:
+                    <span class="block text-sm" >
+                        {{ $t(`alerts.variables`) }}:
+                      <span class="text-red-600 text-sm">
+                      {{ defaultMessages[alert].variables.join(', ') }}
+                    </span>
+                    </span>
+                    <textarea
+                        style="line-height: 10px"
+                        rows="1"
+                        class="w-1/2 mt-1 text-sm dark:border-gray-600 dark:bg-gray-700 focus:border-blue-400 focus:outline-none focus:shadow-outline-blue dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                        :placeholder="defaultMessages[alert]"
+                        v-model="new_instance.settings.customMessage"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div class="mt-5"
+                   v-if="!new_instance.edit"
+              >
+                <button
+                    @click="add(alert)"
+                    type="button"
+                    class="w-full inline-flex justify-center rounded-md border border-gray-500 shadow-sm px-4 py-2 text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
+                >
+                  {{ $t(`alerts.add`) }}
+                </button>
+              </div>
+
             </div>
           </div>
         </div>
       </div>
-
       <div class="flex mt-3">
         <button
             type="button"
@@ -171,7 +214,6 @@
         >
           {{ $t(`alerts.apply`) }}
         </button>
-
       </div>
     </div>
   </div>
@@ -205,7 +247,7 @@ function initialData() {
     settings[el] = {
       'instances': [],
       'enabled': false,
-      'settings': ['minamount', 'maxamount']
+      'settings': ['minamount', 'maxamount', 'customMessage', 'customTitle', 'customColour']
     }
     if (el === 'daily_stats') {
       settings[el]['settings'] = ['timezone']
@@ -241,15 +283,81 @@ export default {
       'new_instance': {
         'channel': '',
         'settings': {}
+      },
+      "defaultMessages": {
+        'buy': {
+          'variables': [
+              '{username}', '{amountOfCoin}, {coinKind}', '{event}', '{costInUSCents}', '{costInUSD}',
+          ]
+,          'message': "**{username}** has purchased **{amountOfCoin}** coins of **{coinKind}!**"
+        },
+        'donate': {
+          'variables': [
+              '{fromUsername}', '{amountOfCoin}', '{coinKind}', '{costInUSCents}', '{costInUSD}',
+          ],
+          'message': "**{fromUsername}** has donated **{amountOfCoin}** coins of **{coinKind}!**"
+        },
+        'transfer': {
+          'variables': [
+            '{fromUsername}', '{amountOfCoin}, {coinKind}', '{event}', '{costInUSCents}', '{costInUSD}',
+          ],
+          'message': "**{fromUsername}** has transferred **{amountOfCoin}** coins of **{coinKind}!**"
+        },
+        'convert': {
+          'variables': [
+            '{username}', '{fromAmount}, {fromCoinKind}', '{toAmount}', '{toCoinKind}', '{event}', '{valueInUSCents}', '{valueInUSD}',
+          ],
+          'message': "**{username}** has converted **{fromAmount}** coins of **{fromCoinKind}** to **{toAmount}** coins of **{toCoinKind}!**"
+        },
+        'redeem': {
+          'variables': [
+            '{username}', '{amountOfCoin}, {coinKind}', '{totalFees}', '{withdrawFee}', '{event}', '{estimatedAmountInUSCents}', '{estimatedAmountInUSD}',
+          ],
+          'message': "**{username}** has redeemed **{amountOfCoin}** coins of **{coinKind}!**"
+        },
       }
     }
   },
   methods: {
-    edit(instance) {
+    edit(alert, instance) {
       if (!('edit' in instance)) {
         instance.edit = false
       }
+
+      if (instance.edit) {
+        instance.channel = this.new_instance.channel
+        instance.settings = this.new_instance.settings
+        this.new_instance = {
+          'channel': '',
+          'settings': {}
+        }
+        if (alert !== 'daily_stats') {
+          this.new_instance.settings = {
+            'customMessage': this.defaultMessages[alert].message,
+            'customTitle': "Alert!",
+            'customColour': "#ff0000"
+          }
+        }
+      } else {
+        for (let [key, value] of Object.entries(instance.settings)) {
+          this.new_instance.settings[key] = value
+        }
+        this.new_instance.channel = instance.channel
+        this.new_instance.edit = true
+      }
+
       instance.edit = !instance.edit
+    },
+    getSettings(alert, i=0) {
+      let settingsList = []
+      this.settings[alert].settings.map((el) => {
+        if (!['customMessage', 'customTitle', 'customColour'].includes(el)) {
+          settingsList.push(el)
+        } else if (this.settings[alert].customize && i !== 1) {
+          settingsList.push(el)
+        }
+      })
+      return settingsList
     },
     add(alert) {
       if (!this.auth || !this.currentGuildId) return;
@@ -278,6 +386,13 @@ export default {
         'channel': '',
         'settings': {}
       }
+      if (alert !== 'daily_stats') {
+        this.new_instance.settings = {
+          'customMessage': this.defaultMessages[alert].message,
+          'customTitle': "Alert!",
+          'customColour': "#ff0000"
+        }
+      }
     },
     toggleShow(alert) {
       if (!this.auth || !this.currentGuildId) return;
@@ -292,9 +407,17 @@ export default {
         'channel': '',
         'settings': {}
       }
+      if (alert !== 'daily_stats') {
+        this.new_instance.settings = {
+          'customMessage': this.defaultMessages[alert].message,
+          'customTitle': "Alert!",
+          'customColour': "#ff0000"
+        }
+      }
     },
     onApply() {
       if (!this.auth || !this.currentGuildId) return;
+
       fetch(`${config.botApi}/mappings/alerts_settings${queryString({
             guildId: this.currentGuildId,
           })}`,
