@@ -426,6 +426,12 @@ export default {
         this.show = alert
       }
 
+      this.settings[alert].instances.forEach((instance) => {
+        if(instance.edit === true){
+          instance.edit = false
+        }
+      });
+
       this.new_instance = {
         'channel': '',
         'settings': {}
@@ -440,6 +446,25 @@ export default {
     },
     onApply() {
       if (!this.auth || !this.currentGuildId) return;
+
+      for (let alert in this.settings) {
+        this.settings[alert].instances.forEach((instance) => {
+          if(instance.edit === true){
+            instance.edit = false
+            this.new_instance = {
+              'channel': '',
+              'settings': {}
+            }
+            if (alert !== 'daily_stats') {
+              this.new_instance.settings = {
+                'customMessage': this.defaultMessages[alert].message,
+                'customTitle': "Alert!",
+                'customColour': "#ff0000"
+              }
+            }
+          }
+        });
+      }
 
       fetch(`${config.botApi}/mappings/alerts_settings${queryString({
             guildId: this.currentGuildId,
