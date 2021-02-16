@@ -502,6 +502,9 @@ export default {
       })
           .then((res) => res.json())
           .then((response) => {
+            if (response.error) {
+              return this.$toast.error(response.error);
+            }
             if (response.settings) {
               Object.assign(this.$data.settings, response.settings)
             } else if (!response.guildId) {
