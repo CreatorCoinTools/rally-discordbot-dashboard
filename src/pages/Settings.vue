@@ -141,7 +141,7 @@ export default {
     onBotToggle() {
       //toggle bot endpoint
       if (!this.currentGuildId || !this.auth) {
-        this.$toast.info("No guild has been selected");
+        this.$toast.info("No server has been selected");
         return;
       }
 
@@ -174,7 +174,7 @@ export default {
     onPrefixChange() {
       //change prefix endpoint
       if (!this.currentGuildId || !this.auth) {
-        this.$toast.info("No guild has been selected");
+        this.$toast.info("No server has been selected");
         return;
       }
 

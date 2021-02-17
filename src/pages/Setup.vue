@@ -419,7 +419,7 @@ export default {
     //send a request
     confirm(id) {
       if (!this.currentGuildId || !this.auth) {
-        this.$toast.info("No guild has been selected");
+        this.$toast.info("No server has been selected");
         this.modalVisible = false;
         return;
       }
