@@ -11,6 +11,7 @@ const Setup = () => import('@/pages/Setup');
 const NotFound = () => import('@/pages/NotFound');
 const Customize = () => import('@/pages/Customize');
 const Deeplink = () => import('@/pages/Deeplink');
+const Alerts = () => import('@/pages/Alerts')
 
 export default [
     { path: '/', name: 'Homepage', component: Landing },
@@ -27,6 +28,7 @@ export default [
             { path: 'setup', name: 'Setup', component: Setup },
             { path: 'customize', name: 'Customize', component: Customize },
             { path: 'deeplink', name: 'Deeplink', component: Deeplink },
+            { path: 'alerts', name: 'Alerts', component: Alerts },
         ]
     },
     { path: "*", component: NotFound },
